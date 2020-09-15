@@ -14,10 +14,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="PCAxis.PxExtend" Version="1.0.0-beta2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PCAxis.Excel\PCAxis.Excel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestFiles\BE0101A1_20200914-143936.px">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
