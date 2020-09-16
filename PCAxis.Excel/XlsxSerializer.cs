@@ -100,9 +100,7 @@ namespace PCAxis.Excel
                 Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
 
-
-
-				var book = new XLWorkbook();
+            var book = new XLWorkbook();
 			var sheet = book.Worksheets.Add(model.Meta.Matrix);
 			
 				/*
