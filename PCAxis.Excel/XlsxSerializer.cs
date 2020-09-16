@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using ClosedXML.Excel;
 using PCAxis.Paxiom;
 using PCAxis.Paxiom.Extensions;
@@ -92,7 +93,16 @@ namespace PCAxis.Excel
 
 		private XLWorkbook CreateWorkbook(PCAxis.Paxiom.PXModel model)
 		{
-			var book = new XLWorkbook();
+
+            var currentCulture = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
+
+
+
+				var book = new XLWorkbook();
 			var sheet = book.Worksheets.Add(model.Meta.Matrix);
 			
 				/*
@@ -113,7 +123,7 @@ namespace PCAxis.Excel
 				try
 				{
 					fmt.DecimalSeparator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-				}
+                }
 				catch (Exception)
 				{
 					fmt.DecimalSeparator = ",";
@@ -181,6 +191,7 @@ namespace PCAxis.Excel
                         //sheet.Cell(row, column + dataNoteValueOffset).Value = value;
 
                         //2019-01-09 Removed background Color color in cell, lightsalmon. Do not add background color when cell contains a non numeric value.
+                      
                         setCell(
                             sheet.Cell(row, column + dataNoteValueOffset),                           
                             CellContentType.Data,
@@ -190,9 +201,7 @@ namespace PCAxis.Excel
                                 :
                                 (FormatCellDescription)(c => { c.DataType = XLDataType.Number; c.Style.NumberFormat.Format = FormatNumericCell(GetDecimalPrecision(value, fmt.DecimalSeparator)); })
                         );
-
-
-						if (!string.IsNullOrEmpty(n))
+					if (!string.IsNullOrEmpty(n))
 						{
 							//sheet.Cell(row, column + dataNoteValueOffset).Comment.AddText(n);
 							setCell(
@@ -231,7 +240,11 @@ namespace PCAxis.Excel
 
 
 			return book;
-
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = currentCulture;
+            }
 		}
 
 		private int WriteFootnotes(int row, PXModel model, IXLWorksheet sheet)

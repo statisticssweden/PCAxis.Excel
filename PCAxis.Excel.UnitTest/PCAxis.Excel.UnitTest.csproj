@@ -22,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestFiles\BE0101A1.px">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestFiles\BE0101A1_20200914-143936.px">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
