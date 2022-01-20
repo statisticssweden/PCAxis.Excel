@@ -38,7 +38,7 @@ namespace PCAxis.Excel
 
 			if (book != null)
 			{
-                book.Worksheet(model.Meta.Matrix).Columns().AdjustToContents(2, 2, 40);
+                //book.Worksheet(model.Meta.Matrix).Columns().AdjustToContents(2, 2, 40);
 				if (output is System.IO.Stream)
 					book.SaveAs((System.IO.Stream)output);
 				else if (output is string)
