@@ -100,9 +100,9 @@ namespace PCAxis.Excel
                 Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
 
-            var book = new XLWorkbook();
-			var sheet = book.Worksheets.Add(model.Meta.Matrix);
-			
+				var book = new XLWorkbook();
+				var sheet = book.Worksheets.Add(model.Meta.Matrix);
+
 				/*
 				sheet.Cell(1, 1).Value = model.Meta.Title;
 				sheet.Cell(1, 1).Style.Font.FontSize = 14;
@@ -175,27 +175,28 @@ namespace PCAxis.Excel
 						row = 3 + model.Meta.Heading.Count + i;
 						column = j * dataNoteFactor + sIndent + 1;
 						value = fmt.ReadElement(i, j, ref n, ref dataNote);
-                        //*Decimal valueDecimal = Decimal.Parse(value.ToString());
-                        //*string valueDecimal = "70,0";
-                        //if (!value.IsNumeric())
-                        //{
-                        //    sheet.Cell(row, column + dataNoteValueOffset).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                        //    sheet.Cell(row, column + dataNoteValueOffset).Style.Fill.BackgroundColor = XLColor.LightSalmon;
-                        //}
-                        //else
-                        //{
-                        //    sheet.Cell(row, column + dataNoteValueOffset).DataType = XLCellValues.Number;
-                        //}
-                        //sheet.Cell(row, column + dataNoteValueOffset).Value = value;
+						//*Decimal valueDecimal = Decimal.Parse(value.ToString());
+						//*string valueDecimal = "70,0";
+						//if (!value.IsNumeric())
+						//{
+						//    sheet.Cell(row, column + dataNoteValueOffset).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+						//    sheet.Cell(row, column + dataNoteValueOffset).Style.Fill.BackgroundColor = XLColor.LightSalmon;
+						//}
+						//else
+						//{
+						//    sheet.Cell(row, column + dataNoteValueOffset).DataType = XLCellValues.Number;
+						//}
+						//sheet.Cell(row, column + dataNoteValueOffset).Value = value;
 
-                        //2019-01-09 Removed background Color color in cell, lightsalmon. Do not add background color when cell contains a non numeric value.
-                      
-                        setCell(
-                            sheet.Cell(row, column + dataNoteValueOffset),                           
-                            CellContentType.Data,
-                            value,
+						//2019-01-09 Removed background Color color in cell, lightsalmon. Do not add background color when cell contains a non numeric value.
+
+						//TODO: Improve performance of setting value format, takes a lot of CPU at the moment
+						setCell(
+							sheet.Cell(row, column + dataNoteValueOffset),
+							CellContentType.Data,
+							value,
                             !value.IsNumeric() ?
-                                (FormatCellDescription)(c => { c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;  }) 
+                                (FormatCellDescription)(c => { c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;  })
                                 :
                                 (FormatCellDescription)(c => { c.DataType = XLDataType.Number; c.Style.NumberFormat.Format = FormatNumericCell(GetDecimalPrecision(value, fmt.DecimalSeparator)); })
                         );
@@ -249,6 +250,7 @@ namespace PCAxis.Excel
 		{
 			if (InformationLevel <= InformationLevelType.None) return row;
 
+			int columnCount = sheet.Columns().Count();
 
 			Note n;
 			//Writes mandantory table notes
@@ -258,13 +260,15 @@ namespace PCAxis.Excel
 				if ((n.Mandantory && InformationLevel == InformationLevelType.MandantoryFootnotesOnly) ||
 					 InformationLevel > InformationLevelType.MandantoryFootnotesOnly)
 				{
+					sheet.Range(sheet.Cell(row, 1), sheet.Cell(row, columnCount)).Merge();
+					
 					//sheet.Cell(row, 1).Value = n.Text;
 					setCell(
 						sheet.Cell(row, 1),
 						CellContentType.Footnote,
 						n.Text,
 						c => c.Style.Alignment.WrapText = true
-					);
+					); 
 					//sheet.Cell(row, 1).Style.Alignment.WrapText = true;
 					row++;
 
@@ -292,6 +296,8 @@ namespace PCAxis.Excel
 								null
 							);
 							row++;
+
+							sheet.Range(sheet.Cell(row, 1), sheet.Cell(row, columnCount)).Merge();
 
 							//sheet.Cell(row, 1).Value = n.Text;
 							setCell(
@@ -339,6 +345,7 @@ namespace PCAxis.Excel
 									null
 								);
 								row++;
+								sheet.Range(sheet.Cell(row, 1), sheet.Cell(row, columnCount)).Merge();
 								//sheet.Cell(row, 1).Value = n.Text;
 								setCell(
 									sheet.Cell(row, 1),
@@ -385,6 +392,7 @@ namespace PCAxis.Excel
 						);
 						row++;
 					}
+					sheet.Range(sheet.Cell(row, 1), sheet.Cell(row, columnCount)).Merge();
 					//sheet.Cell(row, 1).Value = cn.Text;
 					setCell(
 						sheet.Cell(row, 1),
@@ -1378,16 +1386,20 @@ namespace PCAxis.Excel
 		}
 
 		#endregion
-        /// <summary>
-        /// A method for format the cell in Excel that contains numeric/decimal values.
-        /// </summary>
-        /// <param name="dfm"></param>
-        /// <returns></returns>
-        private string FormatNumericCell(int dfm)
+
+
+		static string[] arrFormat = new string[] { "0", "0.0", "0.00", "0.000", "0.0000", "0.00000", "0.000000" };
+
+		/// <summary>
+		/// A method for format the cell in Excel that contains numeric/decimal values.
+		/// </summary>
+		/// <param name="dfm"></param>
+		/// <returns></returns>
+		private string FormatNumericCell(int dfm)
         {
             try
             {
-                string[] arrFormat = new string[] { "0", "0.0", "0.00", "0.000", "0.0000", "0.00000", "0.000000" };
+                //string[] arrFormat = new string[] { "0", "0.0", "0.00", "0.000", "0.0000", "0.00000", "0.000000" };
                 return arrFormat[dfm];
             }
             catch (Exception)
@@ -1426,8 +1438,8 @@ namespace PCAxis.Excel
             }
             try
             {
-                int decimalPrecision = value.Substring(value.IndexOf(separtor) + 1).Length;
-                return decimalPrecision;
+				int decimalPrecision = value.Substring(value.IndexOf(separtor) + 1).Length;
+				return decimalPrecision;
             }
             catch (Exception)
             {
