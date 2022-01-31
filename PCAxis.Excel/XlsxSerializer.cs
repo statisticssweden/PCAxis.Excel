@@ -184,8 +184,8 @@ namespace PCAxis.Excel
                             !value.IsNumeric() ?
                                 (FormatCellDescription)(c => { c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;  }) 
                                 :
-                                (FormatCellDescription)(c => { c.DataType = XLDataType.Number; c.Style.NumberFormat.Format = FormatNumericCell(GetDecimalPrecision(value, fmt.DecimalSeparator)); })
-                        );
+								(FormatCellDescription)(c => { c.DataType = XLDataType.Number; c.Style.NumberFormat.Format = FormatNumericCell(GetDecimalPrecision(value, fmt.DecimalSeparator)); })
+						);
 					if (!string.IsNullOrEmpty(n))
 						{
 							//sheet.Cell(row, column + dataNoteValueOffset).Comment.AddText(n);
@@ -1418,19 +1418,19 @@ namespace PCAxis.Excel
 		}
         private int GetDecimalPrecision(string value, string separtor)
         {
-            if (!value.Contains(separtor))
-            {
-                return 0;
+			var index = value.IndexOf(separtor);
+
+			if (index < 0) {
+				return 0;
             }
+
             try
             {
-				int decimalPrecision = value.Substring(value.IndexOf(separtor) + 1).Length;
-				return decimalPrecision;
-            }
-            catch (Exception)
+				return value.Length - index - 1;
+			}
+			catch (Exception)
             {
-
-                return 0;
+				return 0;
             }
 
         }
